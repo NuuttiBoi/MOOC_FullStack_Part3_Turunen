@@ -1,10 +1,10 @@
 const express = require('express')
 const app = express()
 const time = require('express-timestamp')
-const {response, request} = require("express");
+const morgan = require('morgan')
 app.use(express.json())
-app.use(express.text())
 app.use(time.init)
+app.use(morgan('tiny'))
 let persons =
 [
     {
@@ -33,6 +33,9 @@ const generateId = () => {
     return String(randomId)
 }
 
+app.get('/',(request, response) =>{
+    response.json()
+})
 app.get('/api/persons',(request, response)=>{
     response.json(persons)
 })
@@ -60,7 +63,8 @@ app.post('/api/persons', (request, response) =>{
         return response.status(400).json({
             error: 'missing name and/or number'
         })
-    } else if(persons.filter(person => person.name.toLowerCase()=== body.name.toLowerCase())){
+    } else if((persons.filter(person =>
+        person.name.toLowerCase()=== body.name.toLowerCase())).length>0){
         return response.status(400).json({
             error: 'name already exists in the phonebook'
         })
