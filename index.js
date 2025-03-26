@@ -2,9 +2,16 @@ const express = require('express')
 const app = express()
 const time = require('express-timestamp')
 const morgan = require('morgan')
+const {request} = require("express");
 app.use(express.json())
 app.use(time.init)
-app.use(morgan('tiny'))
+app.use(getPostBody)
+
+morgan.token('body', function getBody(request){
+    return JSON.stringify(request.body)
+})
+
+app.use(morgan(':method :url :status :res[content-body] - :response-time ms :body'))
 let persons =
 [
     {
@@ -77,6 +84,12 @@ app.post('/api/persons', (request, response) =>{
     persons = persons.concat(person)
     response.json()
 })
+
+function getPostBody (request, response, next){
+    const body = request.body
+    next()
+}
+
 const PORT=3001
 app.listen(PORT, () =>{
     console.log(`server running on port ${PORT}`)
