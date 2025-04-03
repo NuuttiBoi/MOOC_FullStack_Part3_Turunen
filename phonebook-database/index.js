@@ -3,10 +3,17 @@ const cors = require('cors')
 const express = require('express')
 const Person = require('./models/person')
 const app = express()
+
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+    if(error.name === 'CastError'){
+        return response.status(400).send({error:'malformatted id'})
+    }
+    next(error)
+}
+
 const time = require('express-timestamp')
 const morgan = require('morgan')
-const {json, request, response} = require("express");
-const mongoose = require('mongoose')
 app.use(cors())
 app.use(express.json())
 app.use(time.init)
@@ -26,30 +33,26 @@ app.get('/',(request, response) =>{
 app.get('/api/persons',(request, response)=>{
     Person.find({}).then((persons) =>{
         response.json(persons)
-        console.log(json(persons))
     })
 })
 app.get('/api/info', (request, response) => {
     response.send(`Phonebook has info for ${persons.length} people. <br> 
     ${request.timestamp}`)
 })
-app.get('/api/persons/:id', (request, response) => {
-    const id = request.params.id
-    Person.findById(request.params.id).then((person) => {
-        response.json(person)
-            .catch(error => {
-
-            })
-    })
-    /*
-    const person = persons.find(person => person.id === id)
-    if(person){
-        response.json(person)
-    } else {
-        response.status(404).end()
-    }
-
-     */
+app.get('/api/persons/:id', (request, response, next) => {
+    Person.findById(request.params.id)
+        .then((person) => {
+            if(person){
+                response.json(person)
+            } else {
+                response.status(404).json({
+                    error:'no person found'
+                })
+            }
+        })
+        .catch(error => {
+            next(error)
+        })
 })
 app.delete('/api/persons/:id',(request,response) =>{
     Person.findByIdAndDelete(request.params.id)
@@ -57,7 +60,7 @@ app.delete('/api/persons/:id',(request,response) =>{
             response.status(204).end()
         })
         .catch(error => {
-            console.log(error.json())
+
         })
 })
 app.post('/api/persons', (request, response) =>{
@@ -80,25 +83,24 @@ app.post('/api/persons', (request, response) =>{
             response.json(savedPerson)
         })
     }
-
-
-    /*
-    const person = {
-        id: generateId(),
-        name: request.body.name,
-        number: String(request.body.number)
-    }
-    persons = persons.concat(person)
-    response.json()
-
-     */
 })
-/*
-function getPostBody (request, response, next){
+
+app.put('/api/persons/:id',(request, response, next) => {
+    const id = request.params.id
     const body = request.body
-    next()
-}
- */
+    const filter = {id:id}
+    console.log(id)
+    const update = {number:body.number}
+    Person.findOneAndUpdate(filter,update)
+        .then(updatedPerson => {
+            if(updatedPerson){
+                response.status(200).json(updatedPerson).end()
+            }
+        })
+        .catch(error => {
+            next(error)
+        })
+})
 
 const unknownEndpoint = ((request, response) => {
     return response.status(404).send({
@@ -106,13 +108,10 @@ const unknownEndpoint = ((request, response) => {
     })
 })
 app.use(unknownEndpoint)
-/*
-const errorHandler = (error, response, request, next) => {
-    if(error.name === 'Bad Request'){
-        return response.status(400).send({error:'Bad request'})
-    } else if(error.name ==='Not Found')
-}
- */
+
+
+app.use(errorHandler)
+
 const PORT= process.env.PORT
 app.listen(PORT, () =>{
     console.log(`server running on port ${PORT}`)
