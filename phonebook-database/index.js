@@ -88,17 +88,21 @@ app.post('/api/persons', (request, response) =>{
 app.put('/api/persons/:id',(request, response, next) => {
     const id = request.params.id
     const body = request.body
-    const filter = {id:id}
-    console.log(id)
-    const update = {number:body.number}
-    Person.findOneAndUpdate(filter,update)
+    const filter = {_id:id}
+    const options = {new: true}
+    console.log(body.number)
+    console.log(filter)
+    Person.findOneAndUpdate(filter,{number: body.number}, options)
         .then(updatedPerson => {
+            console.log(updatedPerson)
             if(updatedPerson){
-                response.status(200).json(updatedPerson).end()
+                response.json(updatedPerson)
+            } else {
+                response.status(404).end()
             }
         })
         .catch(error => {
-            next(error)
+            console.log(error)
         })
 })
 
