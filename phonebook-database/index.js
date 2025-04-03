@@ -5,9 +5,8 @@ const Person = require('./models/person')
 const app = express()
 const time = require('express-timestamp')
 const morgan = require('morgan')
-const {json} = require("express");
+const {json, request, response} = require("express");
 const mongoose = require('mongoose')
-
 app.use(cors())
 app.use(express.json())
 app.use(time.init)
@@ -20,13 +19,6 @@ morgan.token('body', function getBody(request){
 app.use(morgan(':method :url :status :res[content-body] - :response-time ms :body'))
 
 let persons = []
-/*
-const generateId = () => {
-    const randomId = Math.floor(Math.random()*300)
-    return String(randomId)
-}
-
- */
 
 app.get('/',(request, response) =>{
     response.send(`<p>Hello</p>`)
@@ -36,16 +28,18 @@ app.get('/api/persons',(request, response)=>{
         response.json(persons)
         console.log(json(persons))
     })
-    //response.json(persons)
 })
 app.get('/api/info', (request, response) => {
     response.send(`Phonebook has info for ${persons.length} people. <br> 
     ${request.timestamp}`)
 })
 app.get('/api/persons/:id', (request, response) => {
-    //const id = request.params.id
+    const id = request.params.id
     Person.findById(request.params.id).then((person) => {
         response.json(person)
+            .catch(error => {
+
+            })
     })
     /*
     const person = persons.find(person => person.id === id)
@@ -58,9 +52,13 @@ app.get('/api/persons/:id', (request, response) => {
      */
 })
 app.delete('/api/persons/:id',(request,response) =>{
-    const id = request.params.id
-    persons = persons.filter(person => person.id !== id)
-    response.status(200).end()
+    Person.findByIdAndDelete(request.params.id)
+        .then(result => {
+            response.status(204).end()
+        })
+        .catch(error => {
+            console.log(error.json())
+        })
 })
 app.post('/api/persons', (request, response) =>{
     const body = request.body
@@ -100,9 +98,21 @@ function getPostBody (request, response, next){
     const body = request.body
     next()
 }
-
  */
 
+const unknownEndpoint = ((request, response) => {
+    return response.status(404).send({
+        error:'endpoint not found'
+    })
+})
+app.use(unknownEndpoint)
+/*
+const errorHandler = (error, response, request, next) => {
+    if(error.name === 'Bad Request'){
+        return response.status(400).send({error:'Bad request'})
+    } else if(error.name ==='Not Found')
+}
+ */
 const PORT= process.env.PORT
 app.listen(PORT, () =>{
     console.log(`server running on port ${PORT}`)
