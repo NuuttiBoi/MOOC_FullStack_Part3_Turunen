@@ -14,10 +14,10 @@ const errorHandler = (error, request, response, next) => {
 
 const time = require('express-timestamp')
 const morgan = require('morgan')
+const {json} = require("express");
 app.use(cors())
 app.use(express.json())
 app.use(time.init)
-//app.use(getPostBody)
 app.use(express.static('dist'))
 morgan.token('body', function getBody(request){
     return JSON.stringify(request.body)
@@ -36,8 +36,11 @@ app.get('/api/persons',(request, response)=>{
     })
 })
 app.get('/api/info', (request, response) => {
-    response.send(`Phonebook has info for ${persons.length} people. <br> 
-    ${request.timestamp}`)
+    Person.countDocuments()
+        .then(result => {
+            response.send((`Phonebook has info for ${result} people. <br> 
+            ${request.timestamp}`))
+        })
 })
 app.get('/api/persons/:id', (request, response, next) => {
     Person.findById(request.params.id)
@@ -49,7 +52,7 @@ app.get('/api/persons/:id', (request, response, next) => {
                     error:'no person found'
                 })
             }
-        })
+})
         .catch(error => {
             next(error)
         })
