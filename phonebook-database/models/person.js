@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const {Int32} = require("mongodb");
 
 mongoose.set('strictQuery', false)
 
@@ -19,7 +20,16 @@ const personSchema = new mongoose.Schema({
         required: true,
         minLength: 3
     },
-    number: String
+    number: {
+        type: String,
+        required: true,
+        minLength: 8,
+        validate: {
+            validator: function (v){
+                    return /^\d{2,3}-\d{4,}$/.test(v);
+                }
+            }
+    }
 })
 
 personSchema.set('toJSON', {
