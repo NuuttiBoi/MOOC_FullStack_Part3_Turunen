@@ -27,8 +27,6 @@ morgan.token('body', function getBody(request){
 
 app.use(morgan(':method :url :status :res[content-body] - :response-time ms :body'))
 
-let persons = []
-
 app.get('/',(request, response) =>{
     response.send(`<p>Hello</p>`)
 })
@@ -59,39 +57,28 @@ app.get('/api/persons/:id', (request, response, next) => {
             next(error)
         })
 })
-app.delete('/api/persons/:id',(request,response) =>{
+app.delete('/api/persons/:id',(request, response, next) =>{
     Person.findByIdAndDelete(request.params.id)
         .then(result => {
             response.status(204).end()
         })
         .catch(error => {
-
+            next(error)
         })
 })
 app.post('/api/persons', (request, response, next) =>{
     const body = request.body
-    if(!body.name || !body.number){
-        return response.status(400).json({
-            error: 'missing name and/or number'
+    const person = new Person({
+        name: body.name,
+        number: body.number
+    })
+    person.save()
+        .then(savedPerson => {
+            response.json(savedPerson)
         })
-    }
-    else if((persons.filter(person =>
-        person.name.toLowerCase()=== body.name.toLowerCase())).length>0){
-        return response.status(400).json({
-            error: 'name already exists in the phonebook'
+        .catch(error => {
+            next(error)
         })
-    } else {
-        const person = new Person({
-            name: request.body.name,
-            number: request.body.number,
-        })
-        person.save()
-            .then(savedPerson => {
-            response.json(savedPerson)})
-            .catch(error => {
-                next(error)
-            })
-    }
 })
 
 app.put('/api/persons/:id',(request, response, next) => {
@@ -111,7 +98,7 @@ app.put('/api/persons/:id',(request, response, next) => {
             }
         })
         .catch(error => {
-            console.log(error)
+            next(error)
         })
 })
 
@@ -121,7 +108,6 @@ const unknownEndpoint = ((request, response) => {
     })
 })
 app.use(unknownEndpoint)
-
 
 app.use(errorHandler)
 

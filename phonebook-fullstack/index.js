@@ -4,6 +4,21 @@ const app = express()
 const time = require('express-timestamp')
 const morgan = require('morgan')
 const {request} = require("express");
+const mongoose = require('mongoose')
+
+const password = process.argv[2]
+const url = `mongodb+srv://fullstack:${password}@cluster0.a5qfl.mongodb.net/noteApp?retryWrites=true&w=majority&appName=Cluster0`
+
+mongoose.set('strictQuery',false)
+mongoose.connect(url)
+
+const personSchema = new mongoose.Schema({
+    content: String,
+    important: Boolean,
+})
+
+const Person = mongoose.model('Person', personSchema)
+
 app.use(cors())
 app.use(express.json())
 app.use(time.init)
@@ -14,6 +29,7 @@ morgan.token('body', function getBody(request){
 })
 
 app.use(morgan(':method :url :status :res[content-body] - :response-time ms :body'))
+/*
 let persons =
 [
     {
@@ -37,6 +53,10 @@ let persons =
         "number": "39-23-6423122"
     }
 ]
+ */
+
+
+
 const generateId = () => {
     const randomId = Math.floor(Math.random()*300)
     return String(randomId)

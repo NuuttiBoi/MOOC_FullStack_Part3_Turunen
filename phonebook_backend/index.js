@@ -1,12 +1,14 @@
+const cors = require('cors')
 const express = require('express')
 const app = express()
 const time = require('express-timestamp')
 const morgan = require('morgan')
 const {request} = require("express");
+app.use(cors())
 app.use(express.json())
 app.use(time.init)
 app.use(getPostBody)
-
+//app.use(cors)
 morgan.token('body', function getBody(request){
     return JSON.stringify(request.body)
 })
@@ -42,6 +44,7 @@ const generateId = () => {
 
 app.get('/',(request, response) =>{
     response.json()
+    console.log(response.body, 'okk')
 })
 app.get('/api/persons',(request, response)=>{
     response.json(persons)
