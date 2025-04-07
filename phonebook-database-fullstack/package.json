@@ -1,0 +1,30 @@
+{
+  "name": "phonebook_backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "node --watch index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NuuttiBoi/MOOC_FullStack_Part3_Turunen.git"
+  },
+  "author": "Nuutti Turunen",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/NuuttiBoi/MOOC_FullStack_Part3_Turunen/issues"
+  },
+  "homepage": "https://github.com/NuuttiBoi/MOOC_FullStack_Part3_Turunen#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-timestamp": "^0.1.4",
+    "mongodb": "^6.15.0",
+    "mongoose": "^8.13.0",
+    "morgan": "^1.10.0"
+  }
+}
