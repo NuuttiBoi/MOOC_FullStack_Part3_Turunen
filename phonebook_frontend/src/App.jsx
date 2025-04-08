@@ -1,5 +1,4 @@
 import {useEffect, useState} from 'react'
-import axios from 'axios'
 import Filter from "./components/Filter.jsx";
 import PersonForm from "./components/PersonForm.jsx";
 import Persons from "./components/Persons.jsx";
@@ -67,17 +66,26 @@ const App = () => {
                         },5000)
                         console.log('return data', returnedPerson.data)
                     })
-                    // catch error if a person has already been deleted from the server
-                    // before trying to update their number.
                     .catch(error => {
-                        console.log(`${personToUpdate.name} has been deleted from the server...`)
-                        setNotificationType('remove')
-                        setNotificationMessage(`Information of${personToUpdate.name} 
+                        if(error.response && error.response.data){
+                            setNotificationType('remove')
+                            setNotificationMessage(error.response.data.error)
+                            setTimeout(() => {
+                                setNotificationMessage(null)
+                                setNotificationType(null)
+                            }, 5000)
+                        } else {
+                            console.log(error)
+                            console.log(`${personToUpdate.name} has been deleted from the server...`)
+                            setNotificationType('remove')
+                            setNotificationMessage(`Information of${personToUpdate.name} 
                         has already been deleted from the server.`)
-                        setTimeout(() => {
-                            setNotificationType(null)
-                            setNotificationMessage(null)
-                        }, 5000)
+                            console.log(error.response.data.error)
+                            setTimeout(() => {
+                                setNotificationType(null)
+                                setNotificationMessage(null)
+                            }, 5000)
+                        }
                     })
             }
         } else{
@@ -117,7 +125,7 @@ const App = () => {
                         .then(response => {
                             console.log(response.data)
                         })
-                        .then(response => {
+                        .then(() => {
                             setPersons(persons.filter((person) => person.id !== personID))
                             setNotificationType('remove')
                             setNotificationMessage(`${returnedPerson.name} has been removed
@@ -128,7 +136,7 @@ const App = () => {
                             },5000)
                         })
                         .catch(error => {
-                            alert('an error occured while trying to delete')
+                            alert('an error occured while trying to delete', error)
                         })
                 }
             })

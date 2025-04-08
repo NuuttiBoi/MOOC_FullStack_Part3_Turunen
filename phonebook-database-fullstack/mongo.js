@@ -14,7 +14,9 @@ ${password}@cluster0.szliy4a.mongodb.net/persons?retryWrites=true&w=majority&app
 
 mongoose.set('strictQuery',false)
 
-mongoose.connect(url)
+mongoose.connect(url).then(r => {
+  console.log(r)
+})
 
 const personSchema = new mongoose.Schema({
   name:String,
@@ -31,7 +33,9 @@ if(name && number){
   })
   person.save().then(() => {
     console.log(`${name} was added to the phonebook.`)
-    mongoose.connection.close()
+    mongoose.connection.close().then(() => {
+      console.log('connection closed')
+    })
   })
 } else {
   Person.find({}).then(result => {
@@ -39,6 +43,8 @@ if(name && number){
     result.forEach(person => {
       console.log(person.name, ' ', person.number)
     })
-    mongoose.connection.close()
+    mongoose.connection.close().then(() => {
+      console.log('connection closed')
+    })
   })
 }

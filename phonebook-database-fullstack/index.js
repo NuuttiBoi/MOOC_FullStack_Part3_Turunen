@@ -10,6 +10,9 @@ const errorHandler = (error, request, response, next) => {
     return response.status(400).send({ error:'malformatted id' })
   } else if(error.name === 'ValidationError'){
     return response.status(400).send({ error: error.message })
+  } else if(error.name === 'DocumentNotFoundError'){
+    return response.status(400).send({ error: `Information of${request.params.name} not found 
+                        has already been deleted from the server.` })
   }
   next(error)
 }
@@ -84,17 +87,17 @@ app.put('/api/persons/:id',(request, response, next) => {
   const id = request.params.id
   const body = request.body
   const filter = { _id:id }
-  const options = { new: true }
-  console.log(body.number)
-  console.log(filter)
+  const options = {
+    new: true,
+    runValidators: true,
+  }
   Person.findOneAndUpdate(filter,{ number: body.number }, options)
     .then(updatedPerson => {
-      console.log(updatedPerson)
-      if(updatedPerson){
-        response.json(updatedPerson)
-      } else {
-        response.status(404).end()
+      if(!updatedPerson){
+        return response.status(404).end()
       }
+      console.log(updatedPerson)
+      response.json(updatedPerson)
     })
     .catch(error => {
       next(error)
